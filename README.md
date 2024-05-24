@@ -1,7 +1,3 @@
-Certainly! Below is a more detailed documentation specifically tailored for inclusion in a Git repository:
-
----
-
 ## Flex Lexer Documentation
 
  Introduction
