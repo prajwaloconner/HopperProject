@@ -6,7 +6,7 @@ This repository contains the Flex lexer code for tokenizing a Java-like programm
 
  Repository Structure
 
-lexer.l: This file contains the Flex lexer code responsible for tokenizing the input code.
+hopper.l: This file contains the Flex lexer code responsible for tokenizing the input code.
 README.md: This README file provides an overview of the repository and instructions for usage.
 LICENSE: This file contains the license information for the repository.
 
