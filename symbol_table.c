@@ -5,26 +5,40 @@
 
 Symbol *symbolTable = NULL;
 
-Symbol* createSymbol(char *name, char *type, int scope, int value) {
+Symbol* createSymbol(char *name, DataType type, int scope, void *value) {
     Symbol *newSymbol = (Symbol*)malloc(sizeof(Symbol));
     newSymbol->name = strdup(name);
-    newSymbol->type = strdup(type);
+    newSymbol->type = type;
     newSymbol->scope = scope;
-    newSymbol->value = value;
-    newSymbol->next = NULL;
+
+    switch (type) {
+        case INT_TYPE:
+            newSymbol->value.ival = *((int*)value);
+            break;
+        case CHAR_TYPE:
+            newSymbol->value.cval = *((char*)value);
+            break;
+        case STRING_TYPE:
+            newSymbol->value.sval = strdup((char*)value);
+            break;
+        case FLOAT_TYPE:
+            newSymbol->value.fval = *((float*)value);
+            break;
+    }
+
+    newSymbol->next = symbolTable;
+    symbolTable = newSymbol;
+
     return newSymbol;
 }
 
-void insertSymbol(char *name, char *type, int scope, int value) {
+void insertSymbol(char *name, DataType type, int scope, void *value) {
     Symbol *existingSymbol = findSymbol(name);
-    if (existingSymbol) {
-        printf("Symbol %s already exists. Updating value.\n", name);
-        existingSymbol->value = value;
-        return;
+    if (existingSymbol && existingSymbol->scope == scope) {
+        updateSymbolValue(name, type, value);
+    } else {
+        createSymbol(name, type, scope, value);
     }
-    Symbol *newSymbol = createSymbol(name, type, scope, value);
-    newSymbol->next = symbolTable;
-    symbolTable = newSymbol;
 }
 
 Symbol* findSymbol(char *name) {
@@ -38,33 +52,60 @@ Symbol* findSymbol(char *name) {
     return NULL;
 }
 
-void updateSymbolValue(char *name, int value) {
+void updateSymbolValue(char *name, DataType type, void *value) {
     Symbol *symbol = findSymbol(name);
     if (symbol) {
-        symbol->value = value;
-    } else {
-        printf("Symbol %s not found.\n", name);
+        symbol->type = type;
+        switch (type) {
+            case INT_TYPE:
+                symbol->value.ival = *((int*)value);
+                break;
+            case CHAR_TYPE:
+                symbol->value.cval = *((char*)value);
+                break;
+            case STRING_TYPE:
+                free(symbol->value.sval);
+                symbol->value.sval = strdup((char*)value);
+                break;
+            case FLOAT_TYPE:
+                symbol->value.fval = *((float*)value);
+                break;
+        }
     }
 }
 
 void printSymbolTable() {
     Symbol *current = symbolTable;
-    printf("Symbol Table:\n");
-    printf("Name\tType\tScope\tValue\n");
     while (current != NULL) {
-        printf("%s\t%s\t%d\t%d\n", current->name, current->type, current->scope, current->value);
+        printf("Name: %s, Scope: %d, Type: ", current->name, current->scope);
+        switch (current->type) {
+            case INT_TYPE:
+                printf("INT, Value: %d\n", current->value.ival);
+                break;
+            case CHAR_TYPE:
+                printf("CHAR, Value: %c\n", current->value.cval);
+                break;
+            case STRING_TYPE:
+                printf("STRING, Value: %s\n", current->value.sval);
+                break;
+            case FLOAT_TYPE:
+                printf("FLOAT, Value: %f\n", current->value.fval);
+                break;
+        }
         current = current->next;
     }
 }
 
 void freeSymbolTable() {
     Symbol *current = symbolTable;
-    Symbol *nextSymbol;
     while (current != NULL) {
-        nextSymbol = current->next;
+        Symbol *next = current->next;
         free(current->name);
-        free(current->type);
+        if (current->type == STRING_TYPE) {
+            free(current->value.sval);
+        }
         free(current);
-        current = nextSymbol;
+        current = next;
     }
+    symbolTable = NULL;
 }
