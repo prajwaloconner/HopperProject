@@ -109,3 +109,4 @@ void freeSymbolTable() {
     }
     symbolTable = NULL;
 }
+
