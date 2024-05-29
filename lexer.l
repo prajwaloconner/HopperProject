@@ -1,87 +1,96 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "symbol_table.h"
 
 int currentScope = 0; // Global scope for simplicity
-int currentValue = 0; // To store the value of the variable being processed
 %}
 
 %option noyywrap
 
+%union {
+    int ival;
+    char cval;
+    char *sval;
+}
+
+%token <sval> IDENTIFIER
+%token <ival> NUMBER
+%token <cval> CHARACTER
+%token <sval> STRING
+
+%token INT CHAR FLOAT DOUBLE VOID BOOL
+%token IF ELSE FOR WHILE DO SWITCH CASE DEFAULT BREAK CONTINUE RETURN EXIT MAIN TRUE FALSE CLASS IMPORT STATIC STRUCT UNION STRING_KEY NEW THIS
+%token EQ NEQ LEQ GEQ LT GT
+%token PLUS MINUS MUL DIV MOD AND OR NOT ASSIGN SEMICOLON
+%token LBRACE RBRACE LPAREN RPAREN LBRACKET RBRACKET
+
 %%
-"int"          { printf("Keyword (Data type - int): %s\n", yytext); }
-"char"         { printf("Keyword (Data type - char): %s\n", yytext); }
-"float"        { printf("Keyword (Data type - float): %s\n", yytext); }
-"double"       { printf("Keyword (Data type - double): %s\n", yytext); }
-"void"|"bool"  { printf("Keyword (Data type): %s\n", yytext); }
+"int"          { return INT; }
+"char"         { return CHAR; }
+"float"        { return FLOAT; }
+"double"       { return DOUBLE; }
+"void"         { return VOID; }
+"bool"         { return BOOL; }
 
-"if"|"else"|"for"|"while"|"do" { printf("Keyword (Control statement): %s\n", yytext); }
-"switch"|"case"|"default"      { printf("Keyword (Switch case): %s\n", yytext); }
-"break"|"continue"|"return"|"exit"|"main" { printf("Keyword: %s\n", yytext); }
-"true"|"false" { printf("Keyword (Boolean literal): %s\n", yytext); }
-"class"|"import"|"static" { printf("Keyword: %s\n", yytext); }
-"struct"|"union" { printf("Keyword (Composite type): %s\n", yytext); }
-"String" { printf("Keyword (String type): %s\n", yytext); }
+"if"           { return IF; }
+"else"         { return ELSE; }
+"for"          { return FOR; }
+"while"        { return WHILE; }
+"do"           { return DO; }
+"switch"       { return SWITCH; }
+"case"         { return CASE; }
+"default"      { return DEFAULT; }
+"break"        { return BREAK; }
+"continue"     { return CONTINUE; }
+"return"       { return RETURN; }
+"exit"         { return EXIT; }
+"main"         { return MAIN; }
+"true"         { return TRUE; }
+"false"        { return FALSE; }
+"class"        { return CLASS; }
+"import"       { return IMPORT; }
+"static"       { return STATIC; }
+"struct"       { return STRUCT; }
+"union"        { return UNION; }
+"String"       { return STRING_KEY; }
+"new"          { return NEW; }
+"this"         { return THIS; }
 
-"==" { printf("Relational operator (equal to): ==\n"); }
-"!=" { printf("Relational operator (not equal to): !=\n"); }
-"<=" { printf("Relational operator (less than or equal to): <=\n"); }
-">=" { printf("Relational operator (greater than or equal to): >=\n"); }
-"<"  { printf("Relational operator (less than): <\n"); }
-">"  { printf("Relational operator (greater than): >\n"); }
+"=="           { return EQ; }
+"!="           { return NEQ; }
+"<="           { return LEQ; }
+">="           { return GEQ; }
+"<"            { return LT; }
+">"            { return GT; }
 
-"+"|"-"|"*"|"/"|"%" { printf("Arithmetic operator: %s\n", yytext); }
-"&&"|"||"|"!" { printf("Logical operator: %s\n", yytext); }
-"\?"|":" { printf("Ternary operator: %s\n", yytext); }
-"=" { printf("Assignment operator: %s\n", yytext); currentValue = 0; }
+"+"            { return PLUS; }
+"-"            { return MINUS; }
+"*"            { return MUL; }
+"/"            { return DIV; }
+"%"            { return MOD; }
+"&&"           { return AND; }
+"||"           { return OR; }
+"!"            { return NOT; }
+"="            { return ASSIGN; }
+";"            { return SEMICOLON; }
 
-";" { printf("Semicolon: %s\n", yytext); }
+"{"            { return LBRACE; }
+"}"            { return RBRACE; }
+"("            { return LPAREN; }
+")"            { return RPAREN; }
+"["            { return LBRACKET; }
+"]"            { return RBRACKET; }
 
-"{" { printf("Left brace: %s\n", yytext); currentScope++; }
-"}" { printf("Right brace: %s\n", yytext); currentScope--; }
-"(" { printf("Left parenthesis: %s\n", yytext); }
-")" { printf("Right parenthesis: %s\n", yytext); }
-"[" { printf("Left bracket: %s (Array start)\n", yytext); }
-"]" { printf("Right bracket: %s (Array end)\n", yytext); }
+\"[^\"]*\"     { yylval.sval = strdup(yytext); return STRING; }
+\'[^\']\'      { yylval.cval = yytext[1]; return CHARACTER; }
 
-"hop\.out\.ln" { printf("Print statement (newline): %s\n", yytext); }
-"hop\.out" { printf("Print statement: %s\n", yytext); }
-"hopf" { printf("Formatted print statement: %s\n", yytext); }
-"hop\.in" { printf("Input statement: %s\n", yytext); }
+[0-9]+         { yylval.ival = atoi(yytext); return NUMBER; }
+[a-zA-Z_][a-zA-Z0-9_]* { yylval.sval = strdup(yytext); return IDENTIFIER; }
 
-\"[^\"]*\" { printf("String literal: %s\n", yytext); }
-\'[^\']*\' { printf("Character literal: %s\n", yytext); }
-
-"new" { printf("Keyword (New instance): %s\n", yytext); }
-"this" { printf("Keyword (Current instance): %s\n", yytext); }
-
-[0-9]+ {
-    currentValue = atoi(yytext);
-    printf("Number: %s\n", yytext);
-}
-
-[a-zA-Z_][a-zA-Z0-9_]* {
-    printf("Identifier: %s\n", yytext);
-    // Check if the identifier is being assigned a value
-    if (currentValue != 0) {
-        insertSymbol(yytext, "identifier", currentScope, currentValue);
-        currentValue = 0;
-    } else {
-        Symbol *symbol = findSymbol(yytext);
-        if (symbol) {
-            // Increment or update value
-            printf("Updating value of %s\n", yytext);
-            symbol->value++;
-        } else {
-            insertSymbol(yytext, "identifier", currentScope, 0);
-        }
-    }
-}
-
-[ \t\n\r]+ { /* Skip whitespace */ }
-
-. { printf("Unknown token: %s\n", yytext); }
+[ \t\n\r]+     { /* Skip whitespace */ }
+.              { printf("Unknown token: %s\n", yytext); }
 %%
 
 int main(int argc, char **argv) {
@@ -89,4 +98,8 @@ int main(int argc, char **argv) {
     printSymbolTable();
     freeSymbolTable();
     return 0;
+}
+
+int yywrap() {
+    return 1;
 }
