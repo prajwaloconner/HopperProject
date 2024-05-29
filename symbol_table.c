@@ -5,17 +5,24 @@
 
 Symbol *symbolTable = NULL;
 
-Symbol* createSymbol(char *name, char *type, int scope) {
+Symbol* createSymbol(char *name, char *type, int scope, int value) {
     Symbol *newSymbol = (Symbol*)malloc(sizeof(Symbol));
     newSymbol->name = strdup(name);
     newSymbol->type = strdup(type);
     newSymbol->scope = scope;
+    newSymbol->value = value;
     newSymbol->next = NULL;
     return newSymbol;
 }
 
-void insertSymbol(char *name, char *type, int scope) {
-    Symbol *newSymbol = createSymbol(name, type, scope);
+void insertSymbol(char *name, char *type, int scope, int value) {
+    Symbol *existingSymbol = findSymbol(name);
+    if (existingSymbol) {
+        printf("Symbol %s already exists. Updating value.\n", name);
+        existingSymbol->value = value;
+        return;
+    }
+    Symbol *newSymbol = createSymbol(name, type, scope, value);
     newSymbol->next = symbolTable;
     symbolTable = newSymbol;
 }
@@ -31,12 +38,21 @@ Symbol* findSymbol(char *name) {
     return NULL;
 }
 
+void updateSymbolValue(char *name, int value) {
+    Symbol *symbol = findSymbol(name);
+    if (symbol) {
+        symbol->value = value;
+    } else {
+        printf("Symbol %s not found.\n", name);
+    }
+}
+
 void printSymbolTable() {
     Symbol *current = symbolTable;
     printf("Symbol Table:\n");
-    printf("Name\tType\tScope\n");
+    printf("Name\tType\tScope\tValue\n");
     while (current != NULL) {
-        printf("%s\t%s\t%d\n", current->name, current->type, current->scope);
+        printf("%s\t%s\t%d\t%d\n", current->name, current->type, current->scope, current->value);
         current = current->next;
     }
 }
