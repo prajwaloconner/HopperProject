@@ -5,12 +5,14 @@ typedef struct Symbol {
     char *name;
     char *type;
     int scope;
+    int value; // Store the value of the variable
     struct Symbol *next;
 } Symbol;
 
-Symbol* createSymbol(char *name, char *type, int scope);
-void insertSymbol(char *name, char *type, int scope);
+Symbol* createSymbol(char *name, char *type, int scope, int value);
+void insertSymbol(char *name, char *type, int scope, int value);
 Symbol* findSymbol(char *name);
+void updateSymbolValue(char *name, int value);
 void printSymbolTable();
 void freeSymbolTable();
 
