@@ -1,0 +1,7 @@
+flex lexer.l
+gcc -o lexer lex.yy.c symbol_table.c -lfl
+./lexer < input_file.txt
+int a = 5;
+a++;
+int b = 10;
+b += 2;
