@@ -27,6 +27,7 @@ int currentScope = 0; // Global scope for simplicity
 %token LBRACE RBRACE LPAREN RPAREN LBRACKET RBRACKET
 
 %%
+
 "int"          { return INT; }
 "char"         { return CHAR; }
 "float"        { return FLOAT; }
